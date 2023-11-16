@@ -1,4 +1,4 @@
-package studentsController
+package controllers
 
 import (
 	model "main/src/Model"

@@ -29,12 +29,12 @@ func (u *Student) Get() (students []structs.Student, ok bool) {
 	return
 }
 
-func (u *Student) Update(student structs.Student) (ok bool) {
+func (u *Student) Update(studentID uint, student *structs.Student) (ok bool) {
 	db, ok := database.GetConnection()
 	if !ok {
 		return
 	}
-	db.Model(&student).Updates(student)
+	db.Model(&structs.Student{}).Where("id = ?", studentID).Updates(student)
 	return
 }
 
@@ -43,6 +43,6 @@ func (u *Student) Delete(studentId uint) (ok bool) {
 	if !ok {
 		return
 	}
-	db.Delete(&structs.User{}, studentId)
+	db.Unscoped().Delete(&structs.Student{}, studentId)
 	return
 }

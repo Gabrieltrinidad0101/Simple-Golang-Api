@@ -8,5 +8,6 @@ func InitMigration() (ok bool) {
 		return
 	}
 	db.AutoMigrate(&structs.User{})
+	db.AutoMigrate(&structs.Student{})
 	return
 }

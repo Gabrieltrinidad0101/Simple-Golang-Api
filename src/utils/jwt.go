@@ -7,7 +7,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-const SECRET = "prueba"
+var SECRET = []byte("prueba")
 
 func CreateJsonWebToken(user structs.User) (tokenString string, err error) {
 	userJwt := &structs.UserJwt{

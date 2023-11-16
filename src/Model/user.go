@@ -25,6 +25,6 @@ func (u *User) FindByName(name string) (user structs.User, ok bool) {
 	if !ok {
 		return
 	}
-	db.First(&user, "Username = ?", name)
+	db.First(&user, "name = ?", name)
 	return
 }
