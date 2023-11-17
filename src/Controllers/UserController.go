@@ -6,37 +6,44 @@ import (
 	"main/src/utils"
 	"net/http"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo"
 )
 
 func Login(ctx echo.Context) error {
 	var user structs.User
 	ctx.Bind(&user)
+	if err := validate.Struct(user); err != nil {
+		verr, _ := err.(validator.ValidationErrors)
+		return ctx.JSON(http.StatusConflict, structs.ApiResult{
+			Error: utils.ExtractErrorMessages(verr),
+		})
+	}
 	modelUser := model.NewUser()
-	existUser, ok := modelUser.FindByName(user.Name)
+	existUser, ok := modelUser.Find(user.Name, user.Password)
 
 	if !ok {
-		return ctx.JSON(http.StatusConflict, map[string]string{
-			"error": "Error in the DB",
+		return ctx.JSON(http.StatusConflict, structs.ApiResult{
+			Error: "Error in the DB",
 		})
 	}
 
 	if existUser.Name == "" {
-		return ctx.JSON(http.StatusConflict, map[string]string{
-			"error": "The User not exist",
+		return ctx.JSON(http.StatusConflict, structs.ApiResult{
+			Error: "The name or password is incorrect",
 		})
 	}
 
 	token, err := utils.CreateJsonWebToken(existUser)
 
 	if err != nil {
-		return ctx.JSON(http.StatusConflict, map[string]string{
-			"error": "Error creating the jwt",
+		return ctx.JSON(http.StatusConflict, structs.ApiResult{
+			Error: "Error creating the jwt",
 		})
 	}
 
-	return ctx.JSON(http.StatusConflict, map[string]string{
-		"message": token,
+	return ctx.JSON(http.StatusConflict, structs.ApiResult{
+		Message: token,
 	})
 
 }
@@ -44,37 +51,43 @@ func Login(ctx echo.Context) error {
 func Register(ctx echo.Context) error {
 	var user structs.User
 	ctx.Bind(&user)
+	if err := validate.Struct(user); err != nil {
+		verr, _ := err.(validator.ValidationErrors)
+		return ctx.JSON(http.StatusConflict, structs.ApiResult{
+			Error: utils.ExtractErrorMessages(verr),
+		})
+	}
 	modelUser := model.NewUser()
-	existUser, ok := modelUser.FindByName(user.Name)
+	existUser, ok := modelUser.Find(user.Name, user.Password)
 	if !ok {
-		return ctx.JSON(http.StatusConflict, map[string]string{
-			"error": "Error in the DB",
+		return ctx.JSON(http.StatusConflict, structs.ApiResult{
+			Error: "Error in the DB",
 		})
 	}
 
 	if existUser.Name != "" {
-		return ctx.JSON(http.StatusConflict, map[string]string{
-			"error": "The User exist",
+		return ctx.JSON(http.StatusConflict, structs.ApiResult{
+			Error: "The User exist",
 		})
 	}
 
 	registerUser, ok := modelUser.Register(user)
 
 	if !ok {
-		return ctx.JSON(http.StatusConflict, map[string]string{
-			"error": "Error register the user in the DB",
+		return ctx.JSON(http.StatusConflict, structs.ApiResult{
+			Error: "Error register the user in the DB",
 		})
 	}
 
 	token, err := utils.CreateJsonWebToken(registerUser)
 
 	if err != nil {
-		return ctx.JSON(http.StatusConflict, map[string]string{
-			"error": "Error creating the jwt",
+		return ctx.JSON(http.StatusConflict, structs.ApiResult{
+			Error: "Error creating the jwt",
 		})
 	}
 
-	return ctx.JSON(http.StatusConflict, map[string]string{
-		"message": token,
+	return ctx.JSON(http.StatusConflict, structs.ApiResult{
+		Message: token,
 	})
 }

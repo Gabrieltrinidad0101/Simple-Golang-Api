@@ -11,7 +11,7 @@ import (
 	"github.com/labstack/echo"
 )
 
-var validatorStruct = validator.New()
+var validate = validator.New()
 
 func calcularCurrentPayment(student structs.Student) (float64, string) {
 	if student.BalancePayment <= 0 && student.CurrentPayment >= 0 {
@@ -27,7 +27,7 @@ func CreateStudent(ctx echo.Context) error {
 	var student structs.Student
 	ctx.Bind(&student)
 	modelStudent := model.NewStudent()
-	if err := validatorStruct.Struct(student); err != nil {
+	if err := validate.Struct(student); err != nil {
 		verr, _ := err.(validator.ValidationErrors)
 		return ctx.JSON(http.StatusConflict, map[string]string{
 			"error": utils.ExtractErrorMessages(verr),
@@ -36,19 +36,19 @@ func CreateStudent(ctx echo.Context) error {
 
 	currentPayment, err := calcularCurrentPayment(student)
 	if err != "" {
-		return ctx.JSON(http.StatusConflict, map[string]string{
-			"error": err,
+		return ctx.JSON(http.StatusConflict, structs.ApiResult{
+			Error: err,
 		})
 	}
 	student.CurrentPayment = currentPayment
 	ok := modelStudent.Create(&student)
 	if !ok {
-		return ctx.JSON(http.StatusConflict, map[string]string{
-			"error": "Error in the DB",
+		return ctx.JSON(http.StatusConflict, structs.ApiResult{
+			Error: "Error in the DB",
 		})
 	}
-	return ctx.JSON(http.StatusConflict, map[string]structs.Student{
-		"data": student,
+	return ctx.JSON(http.StatusConflict, structs.ApiResult{
+		Data: student,
 	})
 }
 
@@ -56,59 +56,66 @@ func GetStudents(ctx echo.Context) error {
 	modelStudent := model.NewStudent()
 	users, ok := modelStudent.Get()
 	if !ok {
-		return ctx.JSON(http.StatusConflict, map[string]string{
-			"error": "Error in the DB",
+		return ctx.JSON(http.StatusConflict, structs.ApiResult{
+			Error: "Error in the DB",
 		})
 	}
-	return ctx.JSON(http.StatusConflict, map[string][]structs.Student{
-		"data": users,
+
+	return ctx.JSON(http.StatusConflict, structs.ApiResult{
+		Data: users,
 	})
 }
 
 func UpdateStudents(ctx echo.Context) error {
 	var student structs.Student
 	ctx.Bind(&student)
+	if err := validate.Struct(student); err != nil {
+		verr, _ := err.(validator.ValidationErrors)
+		return ctx.JSON(http.StatusConflict, structs.ApiResult{
+			Error: utils.ExtractErrorMessages(verr),
+		})
+	}
 	studentId, errorUserId := strconv.Atoi(ctx.Param("studentId"))
 	if errorUserId != nil {
-		return ctx.JSON(http.StatusConflict, map[string]string{
-			"error": "Error invalid student id",
+		return ctx.JSON(http.StatusConflict, structs.ApiResult{
+			Error: "Error invalid student id",
 		})
 	}
 	modelStudent := model.NewStudent()
 	currentPayment, err := calcularCurrentPayment(student)
 	if err != "" {
-		return ctx.JSON(http.StatusConflict, map[string]string{
-			"error": err,
+		return ctx.JSON(http.StatusConflict, structs.ApiResult{
+			Error: err,
 		})
 	}
 	student.CurrentPayment = currentPayment
 	ok := modelStudent.Update(uint(studentId), &student)
 	if !ok {
-		return ctx.JSON(http.StatusConflict, map[string]string{
-			"error": "Error in the DB",
+		return ctx.JSON(http.StatusConflict, structs.ApiResult{
+			Error: "Error in the DB",
 		})
 	}
-	return ctx.JSON(http.StatusConflict, map[string]structs.Student{
-		"data": student,
+	return ctx.JSON(http.StatusConflict, structs.ApiResult{
+		Data: student,
 	})
 }
 
 func DeleteStudent(ctx echo.Context) error {
 	userId, err := strconv.Atoi(ctx.Param("userId"))
 	if err != nil {
-		return ctx.JSON(http.StatusConflict, map[string]string{
-			"error": "Error invalid student id",
+		return ctx.JSON(http.StatusConflict, structs.ApiResult{
+			Error: "Error invalid student id",
 		})
 	}
 
 	modelStudent := model.NewStudent()
 	ok := modelStudent.Delete(uint(userId))
 	if !ok {
-		return ctx.JSON(http.StatusConflict, map[string]string{
-			"error": "Error in the DB",
+		return ctx.JSON(http.StatusConflict, structs.ApiResult{
+			Error: "Error in the DB",
 		})
 	}
-	return ctx.JSON(http.StatusConflict, map[string]string{
-		"message": "User deleted successfully",
+	return ctx.JSON(http.StatusConflict, structs.ApiResult{
+		Message: "User deleted successfully",
 	})
 }

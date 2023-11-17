@@ -20,11 +20,11 @@ func (u *User) Register(user structs.User) (structs.User, bool) {
 	return user, ok
 }
 
-func (u *User) FindByName(name string) (user structs.User, ok bool) {
+func (u *User) Find(name string, password string) (user structs.User, ok bool) {
 	db, ok := database.GetConnection()
 	if !ok {
 		return
 	}
-	db.First(&user, "name = ?", name)
+	db.First(&user, "name = ? and password = ? ", name, password)
 	return
 }

@@ -6,6 +6,9 @@ import (
 )
 
 func main() {
-	database.InitMigration()
+	ok := database.InitMigration()
+	if !ok {
+		return
+	}
 	server.StartServer()
 }

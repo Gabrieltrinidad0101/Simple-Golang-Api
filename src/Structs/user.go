@@ -7,12 +7,12 @@ import (
 
 type User struct {
 	gorm.Model
-	Name     string
-	Password string
+	Name     string `validate:"required"`
+	Password string `validate:"required"`
 }
 
 type UserJwt struct {
-	Name string `json:name validate:"required"`
-	Id   uint   `json:password gorm:"primaryKey" validate:"required"`
+	Name string `json:name`
+	Id   uint   `json:password`
 	jwt.StandardClaims
 }
