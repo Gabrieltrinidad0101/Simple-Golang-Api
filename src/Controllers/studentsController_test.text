@@ -1,0 +1,75 @@
+package controllers
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	structs "main/src/Structs"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
+	"github.com/google/uuid"
+	"github.com/labstack/echo"
+	"github.com/stretchr/testify/assert"
+	"syreclabs.com/go/faker"
+)
+
+func makeStudent() structs.Student {
+	return structs.Student{
+		Name:           fmt.Sprintf("%s - %s", faker.Name().Name(), uuid.New()),
+		Age:            faker.Number().NumberInt32(2),
+		CurrentPayment: float64(faker.Number().NumberInt(3)),
+		BalancePayment: float64(faker.Number().NumberInt(4)),
+	}
+}
+
+var Students = []structs.Student{makeStudent(), makeStudent(), makeStudent()}
+
+func TestCreateStudent(t *testing.T) {
+	apiResult, err := Auth(Users[0], "/login")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	e := echo.New()
+	inputJSON, err := json.Marshal(Students[0])
+	if err != nil {
+		return
+	}
+
+	req := httptest.NewRequest(http.MethodPost, "/user/create", bytes.NewBuffer(inputJSON))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	req.Header.Set("token", apiResult.Data.(string))
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+	if err != nil {
+		return
+	}
+
+	studentsController := StudentsController{}
+	studentsController.CreateStudent(c)
+
+	if err = json.Unmarshal(rec.Body.Bytes(), &apiResult); err != nil {
+		return
+	}
+
+	student := apiResult.Data.(structs.Student)
+
+	assert.True(t, student.Name == Students[0].Name, "Expected the names are equals")
+	assert.True(t, student.Age == Students[0].Age, "Expected the age are equals")
+	assert.True(t, student.CurrentPayment == Students[0].CurrentPayment, "Expected the current payment are equals")
+	assert.True(t, student.BalancePayment == Students[0].BalancePayment, "Expected the balance payment are equals")
+}
+
+// func FindUser(t *testing.T) {
+
+// }
+
+// func UpdateUser(t *testing.T) {
+
+// }
+
+// func DeleteUser(t *testing.T) {
+
+// }

@@ -12,7 +12,7 @@ type User struct {
 }
 
 type UserJwt struct {
-	Name string `json:name`
-	Id   uint   `json:password`
+	Name string `json:"name"`
+	Id   uint   `json:"password"`
 	jwt.StandardClaims
 }

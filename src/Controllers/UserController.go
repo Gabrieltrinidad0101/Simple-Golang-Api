@@ -10,7 +10,10 @@ import (
 	"github.com/labstack/echo"
 )
 
-func Login(ctx echo.Context) error {
+type UserController struct {
+}
+
+func (u *UserController) Login(ctx echo.Context) error {
 	var user structs.User
 	ctx.Bind(&user)
 	if err := validate.Struct(user); err != nil {
@@ -43,12 +46,12 @@ func Login(ctx echo.Context) error {
 	}
 
 	return ctx.JSON(http.StatusConflict, structs.ApiResult{
-		Message: token,
+		Data: token,
 	})
 
 }
 
-func Register(ctx echo.Context) error {
+func (u *UserController) Register(ctx echo.Context) error {
 	var user structs.User
 	ctx.Bind(&user)
 	if err := validate.Struct(user); err != nil {

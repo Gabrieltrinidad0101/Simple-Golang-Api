@@ -9,13 +9,16 @@ import (
 
 func Init(e *echo.Group) {
 	//public router
-	e.POST("/login", controllers.Login)
-	e.POST("/register", controllers.Register)
+	userController := controllers.UserController{}
+	e.POST("/login", userController.Login)
+	e.POST("/register", userController.Register)
+
 	//private router
+	studentController := controllers.StudentsController{}
 	admin := e.Group("/user")
 	admin.Use(middleware.VerifyJwt)
-	admin.POST("/create", controllers.CreateStudent)
-	admin.GET("/get", controllers.GetStudents)
-	admin.PUT("/update/:userId", controllers.UpdateStudents)
-	admin.DELETE("/delete/:userId", controllers.DeleteStudent)
+	admin.POST("/create", studentController.CreateStudent)
+	admin.GET("/get", studentController.GetStudents)
+	admin.PUT("/update/:userId", studentController.UpdateStudents)
+	admin.DELETE("/delete/:userId", studentController.DeleteStudent)
 }

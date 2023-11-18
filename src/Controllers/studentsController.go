@@ -13,6 +13,9 @@ import (
 
 var validate = validator.New()
 
+type StudentsController struct {
+}
+
 func calcularCurrentPayment(student structs.Student) (float64, string) {
 	if student.BalancePayment <= 0 && student.CurrentPayment >= 0 {
 		return 0, "The student cannot have a current payment greater than 0 without a balance"
@@ -23,7 +26,7 @@ func calcularCurrentPayment(student structs.Student) (float64, string) {
 	return student.BalancePayment, ""
 }
 
-func CreateStudent(ctx echo.Context) error {
+func (s *StudentsController) CreateStudent(ctx echo.Context) error {
 	var student structs.Student
 	ctx.Bind(&student)
 	modelStudent := model.NewStudent()
@@ -52,7 +55,7 @@ func CreateStudent(ctx echo.Context) error {
 	})
 }
 
-func GetStudents(ctx echo.Context) error {
+func (s *StudentsController) GetStudents(ctx echo.Context) error {
 	modelStudent := model.NewStudent()
 	users, ok := modelStudent.Get()
 	if !ok {
@@ -66,7 +69,7 @@ func GetStudents(ctx echo.Context) error {
 	})
 }
 
-func UpdateStudents(ctx echo.Context) error {
+func (s *StudentsController) UpdateStudents(ctx echo.Context) error {
 	var student structs.Student
 	ctx.Bind(&student)
 	if err := validate.Struct(student); err != nil {
@@ -100,7 +103,7 @@ func UpdateStudents(ctx echo.Context) error {
 	})
 }
 
-func DeleteStudent(ctx echo.Context) error {
+func (s *StudentsController) DeleteStudent(ctx echo.Context) error {
 	userId, err := strconv.Atoi(ctx.Param("userId"))
 	if err != nil {
 		return ctx.JSON(http.StatusConflict, structs.ApiResult{
