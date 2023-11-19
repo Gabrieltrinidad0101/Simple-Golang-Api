@@ -7,7 +7,12 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-var SECRET = []byte("prueba")
+var conf = Configuration{}
+
+func GetJwtSecret() []byte {
+	conf.LoadEnviroments()
+	return []byte(conf.JwtSecret)
+}
 
 func CreateJsonWebToken(user structs.User) (tokenString string, err error) {
 	userJwt := &structs.UserJwt{
@@ -19,7 +24,7 @@ func CreateJsonWebToken(user structs.User) (tokenString string, err error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, userJwt)
-	tokenString, err = token.SignedString(SECRET)
+	tokenString, err = token.SignedString(GetJwtSecret())
 
 	return
 }

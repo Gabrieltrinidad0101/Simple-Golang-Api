@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/labstack/echo"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"syreclabs.com/go/faker"
 )
 
@@ -25,11 +26,11 @@ func makeStudent() structs.Student {
 	}
 }
 
-func comparedUsers(t *testing.T, student1 map[string]interface{}, student2 structs.Student) {
-	assert.True(t, student1["Name"].(string) == student2.Name, "Expected the names are equals")
-	assert.True(t, student1["Age"].(float64) == float64(student2.Age), "Expected the age are equals")
-	assert.True(t, student1["CurrentPayment"].(float64) == student2.CurrentPayment, "Expected the current payment are equals")
-	assert.True(t, student1["BalancePayment"].(float64) == student2.BalancePayment, "Expected the balance payment are equals")
+func comparedStudent(t *testing.T, student1 map[string]interface{}, student2 structs.Student) {
+	assert.Equal(t, student1["Name"].(string), student2.Name, "Expected the names are equals")
+	assert.Equal(t, student1["Age"].(float64), float64(student2.Age), "Expected the age are equals")
+	assert.Equal(t, student1["CurrentPayment"].(float64), student2.CurrentPayment, "Expected the current payment are equals")
+	assert.Equal(t, student1["BalancePayment"].(float64), student2.BalancePayment, "Expected the balance payment are equals")
 }
 
 type StudentHttpRequest struct {
@@ -89,7 +90,7 @@ func TestCreateStudent(t *testing.T) {
 	}
 
 	student := apiResult.Data.(map[string]interface{})
-	comparedUsers(t, student, Students[0])
+	comparedStudent(t, student, Students[0])
 	Students[0].ID = uint(student["ID"].(float64))
 }
 
@@ -103,12 +104,13 @@ func TestFindStudent(t *testing.T) {
 		method:   http.MethodGet,
 		callBack: studentsController.CreateStudent,
 	})
+
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	student := apiResult.Data.(map[string]interface{})
-	comparedUsers(t, student, Students[0])
+	comparedStudent(t, student, Students[0])
 }
 
 func TestUpdateStudent(t *testing.T) {
@@ -128,7 +130,7 @@ func TestUpdateStudent(t *testing.T) {
 		t.Fatal(apiResult.Error)
 	}
 	student := apiResult.Data.(map[string]interface{})
-	comparedUsers(t, student, Students[1])
+	comparedStudent(t, student, Students[1])
 }
 
 func TestDeleteStudent(t *testing.T) {
@@ -147,5 +149,48 @@ func TestDeleteStudent(t *testing.T) {
 
 	if apiResult.Message != "Student deleted successfully" {
 		t.Fatal(fmt.Printf("User is not deleted successfully message result  %s\n", apiResult.Message))
+	}
+}
+
+func TestStudentWithoutCurrentPayment(t *testing.T) {
+	studentsController := StudentsController{}
+	student2 := Students[2]
+	student2.CurrentPayment = 0.0
+	student2.BalancePayment = 100
+	apiResult, err := httpRequest(StudentHttpRequest{
+		user:     Users[1],
+		student:  student2,
+		urlAuth:  "/login",
+		url:      "/user/create",
+		method:   http.MethodPost,
+		callBack: studentsController.CreateStudent,
+	})
+
+	require.NoError(t, err, "Error")
+	if apiResult.Error != "" {
+		t.Fatal(apiResult.Error)
+	}
+
+	student2.CurrentPayment = 150
+	student := apiResult.Data.(map[string]interface{})
+	comparedStudent(t, student, student2)
+}
+
+func TestStudentWithoutBalance(t *testing.T) {
+	studentsController := StudentsController{}
+	student2 := Students[2]
+	student2.BalancePayment = 0
+	apiResult, err := httpRequest(StudentHttpRequest{
+		user:     Users[1],
+		student:  student2,
+		urlAuth:  "/login",
+		url:      "/user/create",
+		method:   http.MethodPost,
+		callBack: studentsController.CreateStudent,
+	})
+
+	require.NoError(t, err, "Error")
+	if apiResult.Error != "The student cannot have a current payment greater than 0 without a balance" {
+		t.Fatal(apiResult.Error)
 	}
 }

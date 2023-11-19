@@ -19,7 +19,7 @@ func VerifyJwt(next echo.HandlerFunc) echo.HandlerFunc {
 		}
 
 		token, err := jwt.ParseWithClaims(tokenString, &structs.UserJwt{}, func(t *jwt.Token) (interface{}, error) {
-			return utils.SECRET, nil
+			return utils.GetJwtSecret(), nil
 		})
 
 		if err != nil {
