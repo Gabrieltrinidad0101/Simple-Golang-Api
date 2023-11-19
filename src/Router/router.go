@@ -19,6 +19,6 @@ func Init(e *echo.Group) {
 	admin.Use(middleware.VerifyJwt)
 	admin.POST("/create", studentController.CreateStudent)
 	admin.GET("/get", studentController.GetStudents)
-	admin.PUT("/update/:userId", studentController.UpdateStudents)
-	admin.DELETE("/delete/:userId", studentController.DeleteStudent)
+	admin.PUT("/update", studentController.UpdateStudents)
+	admin.DELETE("/delete", studentController.DeleteStudent)
 }

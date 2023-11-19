@@ -23,7 +23,7 @@ func calcularCurrentPayment(student structs.Student) (float64, string) {
 	if student.BalancePayment > 0 && student.CurrentPayment == 0 {
 		return student.BalancePayment * 1.5, ""
 	}
-	return student.BalancePayment, ""
+	return student.CurrentPayment, ""
 }
 
 func (s *StudentsController) CreateStudent(ctx echo.Context) error {
@@ -57,7 +57,7 @@ func (s *StudentsController) CreateStudent(ctx echo.Context) error {
 
 func (s *StudentsController) GetStudents(ctx echo.Context) error {
 	modelStudent := model.NewStudent()
-	users, ok := modelStudent.Get()
+	students, ok := modelStudent.Get()
 	if !ok {
 		return ctx.JSON(http.StatusConflict, structs.ApiResult{
 			Error: "Error in the DB",
@@ -65,7 +65,7 @@ func (s *StudentsController) GetStudents(ctx echo.Context) error {
 	}
 
 	return ctx.JSON(http.StatusConflict, structs.ApiResult{
-		Data: users,
+		Data: students,
 	})
 }
 
@@ -78,8 +78,8 @@ func (s *StudentsController) UpdateStudents(ctx echo.Context) error {
 			Error: utils.ExtractErrorMessages(verr),
 		})
 	}
-	studentId, errorUserId := strconv.Atoi(ctx.Param("studentId"))
-	if errorUserId != nil {
+	studentId, errorStudentId := strconv.Atoi(ctx.QueryParam("studentId"))
+	if errorStudentId != nil {
 		return ctx.JSON(http.StatusConflict, structs.ApiResult{
 			Error: "Error invalid student id",
 		})
@@ -104,21 +104,21 @@ func (s *StudentsController) UpdateStudents(ctx echo.Context) error {
 }
 
 func (s *StudentsController) DeleteStudent(ctx echo.Context) error {
-	userId, err := strconv.Atoi(ctx.Param("userId"))
-	if err != nil {
+	studentId, errorStudentId := strconv.Atoi(ctx.QueryParam("studentId"))
+	if errorStudentId != nil {
 		return ctx.JSON(http.StatusConflict, structs.ApiResult{
 			Error: "Error invalid student id",
 		})
 	}
 
 	modelStudent := model.NewStudent()
-	ok := modelStudent.Delete(uint(userId))
+	ok := modelStudent.Delete(uint(studentId))
 	if !ok {
 		return ctx.JSON(http.StatusConflict, structs.ApiResult{
 			Error: "Error in the DB",
 		})
 	}
 	return ctx.JSON(http.StatusConflict, structs.ApiResult{
-		Message: "User deleted successfully",
+		Message: "Student deleted successfully",
 	})
 }

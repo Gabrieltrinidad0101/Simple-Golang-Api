@@ -45,7 +45,7 @@ func (u *UserController) Login(ctx echo.Context) error {
 		})
 	}
 
-	return ctx.JSON(http.StatusConflict, structs.ApiResult{
+	return ctx.JSON(http.StatusOK, structs.ApiResult{
 		Data: token,
 	})
 
@@ -90,7 +90,7 @@ func (u *UserController) Register(ctx echo.Context) error {
 		})
 	}
 
-	return ctx.JSON(http.StatusConflict, structs.ApiResult{
-		Message: token,
+	return ctx.JSON(http.StatusOK, structs.ApiResult{
+		Data: token,
 	})
 }

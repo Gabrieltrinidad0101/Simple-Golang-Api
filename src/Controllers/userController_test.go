@@ -63,7 +63,7 @@ func Auth(user structs.User, url string) (apiResult structs.ApiResult, err error
 
 func verifyJwt(apiResult structs.ApiResult) error {
 	if apiResult.Data == nil {
-		return fmt.Errorf("jwt is null")
+		return fmt.Errorf("jwt is null error = %s", apiResult.Error)
 	}
 
 	tokenParts := strings.Split(apiResult.Data.(string), ".")
@@ -83,7 +83,7 @@ func TestLogin(t *testing.T) {
 }
 
 func TestLoginWithoutAccount(t *testing.T) {
-	apiResult, _ := Auth(Users[1], "/login")
+	apiResult, _ := Auth(Users[2], "/login")
 	if apiResult.Error != "The name or password is incorrect" {
 		t.Fatal("User is login without account")
 	}
